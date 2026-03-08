@@ -1,8 +1,12 @@
+from collections.abc import AsyncIterator
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 import yaml
+from httpx import ASGITransport, AsyncClient
 
+from app.main import app, lifespan
 from app.rules_engine import RulesEngine
 
 RULES_DATA = {
@@ -159,3 +163,19 @@ def rules_yaml_path(tmp_path: Path) -> Path:
 @pytest.fixture()
 def engine(rules_yaml_path: Path) -> RulesEngine:
     return RulesEngine(rules_yaml_path)
+
+
+@pytest.fixture()
+async def async_client(tmp_path: Path) -> AsyncIterator[AsyncClient]:
+    rules_path = tmp_path / "rules.yaml"
+    rules_path.write_text(yaml.dump(RULES_DATA, allow_unicode=True), encoding="utf-8")
+    db_path = tmp_path / "test.db"
+
+    with (
+        patch("app.main.RULES_PATH", rules_path),
+        patch("app.main.DATABASE_PATH", db_path),
+    ):
+        async with lifespan(app):
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as client:
+                yield client
