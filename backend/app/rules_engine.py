@@ -13,6 +13,7 @@ from app.models import (
     RiskLevel,
     Rule,
     RulesConfig,
+    ScoringThresholds,
     UserProfile,
 )
 
@@ -117,7 +118,7 @@ class RulesEngine:
         risk_level = self._determine_risk_level(total_score, thresholds)
         compatible = total_score < thresholds.high
 
-        alternatives = self._find_alternatives(pet_type, values, total_score) if True else []
+        alternatives = self._find_alternatives(pet_type, values, total_score)
 
         return EvaluationResponse(
             compatible=compatible,
@@ -129,7 +130,7 @@ class RulesEngine:
         )
 
     @staticmethod
-    def _determine_risk_level(total_score: int, thresholds) -> RiskLevel:
+    def _determine_risk_level(total_score: int, thresholds: ScoringThresholds) -> RiskLevel:
         if total_score < thresholds.low:
             return RiskLevel.LOW
         if total_score < thresholds.medium:
@@ -140,13 +141,13 @@ class RulesEngine:
         self, original_pet_type: str, values: dict, original_score: int
     ) -> list[Alternative]:
         thresholds = self._config.scoring.thresholds
+        common_score, _, common_positives = _evaluate_rules(self._config.common_rules, values)
         candidates: list[tuple[int, str, PetConfig, list[str]]] = []
 
         for pet_id, pet_cfg in self._config.pet_types.items():
             if pet_id == original_pet_type:
                 continue
 
-            common_score, _, common_positives = _evaluate_rules(self._config.common_rules, values)
             pet_score, _, pet_positives = _evaluate_rules(pet_cfg.rules, values)
             alt_total = common_score + pet_score
 

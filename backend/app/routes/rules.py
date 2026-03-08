@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
+from pydantic import ValidationError
+from yaml import YAMLError
 
 from app.dependencies import Engine
+from app.rules_engine import RulesEngineError
 
 router = APIRouter(prefix="/api")
 
@@ -25,7 +28,7 @@ async def reload_rules(engine: Engine) -> dict:
     try:
         engine.reload()
         return {"status": "ok", "rules_version": engine.rules_version}
-    except Exception as e:
+    except (RulesEngineError, YAMLError, ValidationError) as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
 
 
@@ -33,5 +36,5 @@ async def reload_rules(engine: Engine) -> dict:
 async def validate_rules(engine: Engine) -> dict:
     try:
         return engine.validate_only()
-    except Exception as e:
+    except (RulesEngineError, YAMLError, ValidationError) as e:
         raise HTTPException(status_code=422, detail=str(e)) from e

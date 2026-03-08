@@ -1,13 +1,5 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
-
-function HomePage() {
-  return (
-    <div className="text-center py-20">
-      <h1 className="text-4xl font-bold text-gray-900 mb-4">PetMatch</h1>
-      <p className="text-lg text-gray-600">Сервис оценки совместимости с питомцем</p>
-    </div>
-  )
-}
+import EvaluatePage from './pages/EvaluatePage'
 
 function AdminPage() {
   return (
@@ -46,7 +38,7 @@ function App() {
 
         <main className="max-w-5xl mx-auto px-4 py-6">
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<EvaluatePage />} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </main>
