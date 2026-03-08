@@ -137,6 +137,32 @@ async def test_validate_invalid(async_client: AsyncClient, tmp_path):
     assert resp.status_code == 422
 
 
+# --- Rules raw & save ---
+
+
+async def test_get_rules_raw(async_client: AsyncClient):
+    resp = await async_client.get("/api/rules/raw")
+    assert resp.status_code == 200
+    assert "scoring" in resp.text
+    assert "pet_types" in resp.text
+
+
+async def test_save_rules_valid(async_client: AsyncClient):
+    raw = (await async_client.get("/api/rules/raw")).text
+    resp = await async_client.post("/api/rules", json={"yaml_content": raw})
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+    assert "rules_version" in resp.json()
+
+
+async def test_save_rules_invalid(async_client: AsyncClient):
+    resp = await async_client.post(
+        "/api/rules",
+        json={"yaml_content": "scoring:\n  thresholds: invalid"},
+    )
+    assert resp.status_code == 422
+
+
 # --- Stats ---
 
 

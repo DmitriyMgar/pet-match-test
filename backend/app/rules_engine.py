@@ -24,9 +24,8 @@ class RulesEngineError(Exception):
     pass
 
 
-def _load_and_validate(path: Path) -> tuple[RulesConfig, str]:
-    """Load YAML, parse via Pydantic, validate all expressions, compute hash."""
-    raw = path.read_text(encoding="utf-8")
+def _validate_yaml_content(raw: str) -> tuple[RulesConfig, str]:
+    """Parse YAML string, validate via Pydantic + expressions, compute hash."""
     rules_version = hashlib.sha256(raw.encode()).hexdigest()[:16]
 
     data = yaml.safe_load(raw)
@@ -46,6 +45,12 @@ def _load_and_validate(path: Path) -> tuple[RulesConfig, str]:
                 raise RulesEngineError(msg) from e
 
     return config, rules_version
+
+
+def _load_and_validate(path: Path) -> tuple[RulesConfig, str]:
+    """Load YAML from disk and validate."""
+    raw = path.read_text(encoding="utf-8")
+    return _validate_yaml_content(raw)
 
 
 def _evaluate_rules(rules: list[Rule], values: dict) -> tuple[int, list[str], list[str]]:
@@ -90,6 +95,16 @@ class RulesEngine:
         """Dry-run validation of YAML on disk without applying."""
         _load_and_validate(self._path)
         return {"valid": True, "message": "Rules are valid"}
+
+    def get_raw_yaml(self) -> str:
+        return self._path.read_text(encoding="utf-8")
+
+    def save_yaml(self, content: str) -> None:
+        """Validate YAML content, write to disk, reload engine."""
+        new_config, new_version = _validate_yaml_content(content)
+        self._path.write_text(content, encoding="utf-8")
+        self._config = new_config
+        self._rules_version = new_version
 
     def get_pet_types(self) -> list[dict[str, str]]:
         return [

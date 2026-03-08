@@ -26,3 +26,37 @@ export function evaluate(petType, profile) {
     body: JSON.stringify({ pet_type: petType, profile }),
   })
 }
+
+export function fetchStats() {
+  return request('/stats')
+}
+
+export function fetchEvaluations(limit = 20, offset = 0) {
+  return request(`/evaluations?limit=${limit}&offset=${offset}`)
+}
+
+export function fetchRules() {
+  return request('/rules')
+}
+
+export function reloadRules() {
+  return request('/rules/reload', { method: 'POST' })
+}
+
+export function validateRules() {
+  return request('/rules/validate', { method: 'POST' })
+}
+
+export async function fetchRulesRaw() {
+  const response = await fetch(`${API_BASE}/rules/raw`)
+  if (!response.ok) throw new Error(response.statusText)
+  return response.text()
+}
+
+export function saveRules(yamlContent) {
+  return request('/rules', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ yaml_content: yamlContent }),
+  })
+}
