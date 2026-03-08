@@ -1,0 +1,28 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/rules.yaml:/app/rules.yaml:ro
+      - petmatch_data:/app/data
+    environment:
+      - DATABASE_PATH=/app/data/petmatch.db
+      - RULES_PATH=/app/rules.yaml
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  petmatch_data:

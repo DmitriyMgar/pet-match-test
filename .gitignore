@@ -1,1 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# App data
+backend/data/
+*.db
+
+# Docker
+petmatch_data/
+
+# Env
+.env
+.env.local
+
+
 docs/

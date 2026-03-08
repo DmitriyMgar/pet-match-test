@@ -1,0 +1,9 @@
+scoring:
+  thresholds:
+    low: 5
+    medium: 8
+    high: 10
+
+common_rules: []
+
+pet_types: {}
